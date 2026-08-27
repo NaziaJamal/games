@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jumbled Sentences · Where Are You From?</title>
+<style>
+  :root{
+    --ink:#12233b;--soft:#3a5170;--paper:#f6f3ec;--card:#fff;--line:#dfd8c8;
+    --brand:#1f4e88;--deep:#12233b;--gold:#b0872f;--gold-soft:#e7d9b4;
+    --green:#2f7d4f;--coral:#c65b3c;--a1:#1f6f8b;--a2:#9a3d8c;
+    --shadow:0 12px 44px rgba(18,35,59,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:linear-gradient(165deg,#e9e3d5,#f6f3ec 45%);
+    color:var(--ink);min-height:100vh;padding:16px;
+    display:flex;align-items:flex-start;justify-content:center;
+  }
+  .app{width:min(720px,100%);background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+
+  .topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--deep);color:#fff;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:.4px;font-size:.9rem}
+  .logo .mark{width:28px;height:28px;border-radius:50%;border:2.5px solid var(--gold);color:var(--gold);display:grid;place-items:center;font-weight:900;font-size:.72rem}
+  .topbar .title{font-size:.8rem;color:#c8d4e6;font-weight:500}
+  .topbar .spacer{flex:1}
+  .scoretag{background:rgba(255,255,255,.12);padding:5px 12px;border-radius:20px;font-weight:700;font-size:.82rem}
+  .scoretag b{color:var(--gold-soft)}
+
+  .screen{padding:26px 26px 30px}
+  .screen.hidden{display:none}
+
+  /* ---- start screen ---- */
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;font-weight:800;color:var(--gold);margin-bottom:10px}
+  .eyebrow::before{content:"";width:22px;height:2px;background:var(--gold)}
+  h1{font-size:1.9rem;color:var(--deep);font-weight:800;line-height:1.1;margin-bottom:8px}
+  .lead{font-size:1.05rem;color:var(--soft);margin-bottom:20px}
+  .howto{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:20px}
+  .howto h3{color:var(--brand);font-size:1rem;margin-bottom:8px}
+  .howto ol{margin-left:20px}
+  .howto li{margin:5px 0;color:var(--ink);font-size:.98rem}
+  .namefield{margin-bottom:16px}
+  .namefield label{display:block;font-weight:700;color:var(--deep);margin-bottom:6px;font-size:.95rem}
+  .namefield input{width:100%;padding:13px 16px;border:2px solid var(--line);border-radius:11px;font-size:1.05rem;color:var(--ink);background:#fff}
+  .namefield input:focus{outline:none;border-color:var(--brand)}
+
+  .btn{border:none;border-radius:12px;padding:14px 26px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+  .btn.primary{background:var(--brand);color:#fff;width:100%}
+  .btn.primary:hover{background:var(--deep)}
+  .btn.gold{background:var(--gold);color:#fff}
+  .btn.gold:hover{background:#8f6d24}
+  .btn.ghost{background:#fff;color:var(--brand);border:2px solid var(--brand)}
+  .btn.ghost:hover{background:#eef3f8}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  /* ---- play screen ---- */
+  .progress-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .qnum{font-weight:800;color:var(--brand);font-size:.95rem}
+  .qtype{font-size:.68rem;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:14px;color:#fff;text-transform:uppercase}
+  .qtype.statement{background:var(--brand)}
+  .qtype.question{background:var(--a2)}
+  .pbar{height:8px;background:#e4dcc9;border-radius:20px;overflow:hidden;margin-bottom:20px}
+  .pfill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),#e2c268);transition:.3s}
+
+  .hint{background:#fff7ec;border:1px solid var(--gold-soft);border-radius:10px;padding:10px 14px;font-size:.92rem;color:#6a5320;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+  .task-label{font-size:.9rem;color:var(--soft);font-weight:600;margin-bottom:10px}
+
+  /* answer build area */
+  .build{min-height:66px;background:#fff;border:2px dashed var(--brand);border-radius:14px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;margin-bottom:8px}
+  .build.empty::before{content:"Tap words below to build your sentence…";color:#9aa7b8;font-style:italic;font-size:.95rem;align-self:center;padding:6px}
+  .build.correct{border-color:var(--green);border-style:solid;background:#eef7f0}
+  .build.wrong{border-color:var(--coral);border-style:solid;background:#fbefec}
+
+  .bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;min-height:50px}
+
+  .word{background:var(--card);border:2px solid var(--brand);color:var(--deep);border-radius:10px;padding:10px 15px;font-size:1.08rem;font-weight:600;cursor:pointer;transition:.12s;user-select:none}
+  .word:hover{background:#eef3f8}
+  .word:active{transform:scale(.94)}
+  .word.in-answer{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .word.punct{padding:10px 12px}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap}
+  .controls .btn{flex:1;min-width:120px;padding:12px 18px;font-size:1rem}
+
+  .feedback{margin-top:14px;padding:14px 18px;border-radius:12px;font-size:1.05rem;display:none;animation:pop .3s}
+  .feedback.show{display:block}
+  @keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  .feedback.ok{background:#e6f2ea;border:1px solid #a9d3ba;color:#1d5033}
+  .feedback.no{background:#fbe9e6;border:1px solid #e8b6ac;color:#8a2c1a}
+  .feedback b{display:block;font-size:1.1rem;margin-bottom:4px}
+  .feedback .correct-answer{margin-top:6px;font-weight:700;color:var(--green)}
+  .speak-mini{margin-top:8px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:.85rem}
+
+  /* ---- end screen ---- */
+  .end-hero{text-align:center;padding:10px 0 4px}
+  .end-hero .emoji{font-size:3rem}
+  .end-hero h1{margin-top:6px}
+  .scorebig{font-size:3.4rem;font-weight:800;color:var(--gold);text-align:center;margin:6px 0}
+  .scorebig span{font-size:1.6rem;color:var(--soft)}
+  .msg{text-align:center;color:var(--soft);font-size:1.08rem;margin-bottom:22px}
+
+  .codebox{background:var(--deep);color:#fff;border-radius:16px;padding:22px;text-align:center;margin-bottom:18px}
+  .codebox .lbl{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-soft);font-weight:700;margin-bottom:8px}
+  .codebox .code{font-size:2.2rem;font-weight:800;letter-spacing:.15em;font-family:"Courier New",monospace;color:#fff;background:rgba(255,255,255,.1);border-radius:10px;padding:12px;word-break:break-all}
+  .codebox .instr{font-size:.9rem;color:#c8d4e6;margin-top:10px}
+  .copybtn{margin-top:12px;background:var(--gold);color:#fff;border:none;border-radius:9px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:.9rem}
+
+  .review{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:18px}
+  .review h3{color:var(--brand);font-size:1rem;margin-bottom:10px}
+  .review .item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:.95rem;align-items:flex-start}
+  .review .item:last-child{border:none}
+  .review .mk{font-weight:800;flex-shrink:0}
+  .review .mk.y{color:var(--green)}
+  .review .mk.n{color:var(--coral)}
+  .review .sent{color:var(--ink)}
+
+  /* teacher panel */
+  .teacher-link{text-align:center;margin-top:8px}
+  .teacher-link a{color:var(--soft);font-size:.82rem;text-decoration:underline;cursor:pointer}
+  .decoder{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-top:14px}
+  .decoder h3{color:var(--deep);font-size:1rem;margin-bottom:10px}
+  .decoder input{width:100%;padding:11px 14px;border:2px solid var(--line);border-radius:10px;font-size:1rem;margin-bottom:10px;font-family:"Courier New",monospace}
+  .decoder .result{font-size:1rem;color:var(--ink);min-height:24px}
+  .decoder .result b{color:var(--green)}
+
+  @media(max-width:520px){
+    .screen{padding:20px 18px 24px}
+    h1{font-size:1.6rem}
+    .word{font-size:1rem;padding:9px 13px}
+    .scorebig{font-size:2.8rem}
+    .codebox .code{font-size:1.7rem}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo"><span class="mark">AO</span> APPROACH</div>
+    <span class="title">Jumbled Sentences · Unit 2</span>
+    <span class="spacer"></span>
+    <span class="scoretag" id="scoreTag" style="display:none">Score <b id="scoreNum">0</b>/<span id="scoreTot">12</span></span>
+  </div>
+
+  <!-- START -->
+  <section class="screen" id="startScreen">
+    <div class="eyebrow">Warm-up game</div>
+    <h1>Put the words in order</h1>
+    <p class="lead">Build 12 correct sentences and questions about country, nationality, and age.</p>
+    <div class="howto">
+      <h3>How to play</h3>
+      <ol>
+        <li>Tap the words in the right order to build the sentence.</li>
+        <li>Tap a word again to remove it.</li>
+        <li>Press <b>Check</b>. Green = correct! 🎉</li>
+        <li>At the end you get a <b>code</b> — show it to your teacher.</li>
+      </ol>
+    </div>
+    <div class="namefield">
+      <label for="nameInput">Type your first name:</label>
+      <input id="nameInput" type="text" placeholder="e.g. Marina" maxlength="20" autocomplete="off">
+    </div>
+    <button class="btn primary" onclick="startGame()">Start ▶</button>
+    <div class="teacher-link"><a onclick="toggleDecoder()">👩‍🏫 Teacher: decode a student's code</a></div>
+    <div class="decoder hidden" id="decoder">
+      <h3>Decode a completion code</h3>
+      <input id="decodeInput" type="text" placeholder="Paste code here…" oninput="decodeCode()">
+      <div class="result" id="decodeResult"></div>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section class="screen hidden" id="playScreen">
+    <div class="progress-head">
+      <span class="qnum" id="qnum">Sentence 1 of 12</span>
+      <span class="qtype statement" id="qtype">Statement</span>
+    </div>
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+
+    <div class="hint" id="hint">💡 <span id="hintText"></span></div>
+
+    <div class="task-label">Build the sentence:</div>
+    <div class="build empty" id="build"></div>
+    <div class="bank" id="bank"></div>
+
+    <div class="controls">
+      <button class="btn ghost" onclick="clearBuild()">↺ Clear</button>
+      <button class="btn gold" id="checkBtn" onclick="checkAnswer()">Check ✓</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+  </section>
+
+  <!-- END -->
+  <section class="screen hidden" id="endScreen">
+    <div class="end-hero">
+      <div class="emoji" id="endEmoji">🎉</div>
+      <h1>All done, <span id="endName">friend</span>!</h1>
+    </div>
+    <div class="scorebig"><span id="endScore">0</span><span> / 12</span></div>
+    <p class="msg" id="endMsg"></p>
+
+    <div class="codebox">
+      <div class="lbl">Your completion code</div>
+      <div class="code" id="finalCode">—</div>
+      <div class="instr">📸 Show this to your teacher, or paste it in the Zoom chat.</div>
+      <button class="copybtn" onclick="copyCode()">📋 Copy code</button>
+    </div>
+
+    <div class="review" id="reviewBox">
+      <h3>Your answers</h3>
+      <div id="reviewList"></div>
+    </div>
+
+    <button class="btn primary" onclick="location.reload()">↺ Play again</button>
+  </section>
+</div>
+
+<script>
+/* ---------------- SENTENCE DATA ----------------
+   Each: the correct sentence as an array of tokens (words + punctuation),
+   type (statement/question), and a small hint.
+   Mix of A1/A2, statements and questions, all Unit-2 target language. */
+const DATA=[
+  {type:"statement", tokens:["I","am","from","Brazil","."], hint:"Start with I. Country after 'from'."},
+  {type:"question",  tokens:["Where","are","you","from","?"], hint:"A question — starts with a WH- word."},
+  {type:"statement", tokens:["She","is","Brazilian","."], hint:"Nationality has a CAPITAL letter."},
+  {type:"question",  tokens:["How","old","are","you","?"], hint:"Ask about age. Two words start it."},
+  {type:"statement", tokens:["I","am","thirty","-","five","years","old","."], hint:"Use 'am' for age, not 'have'."},
+  {type:"statement", tokens:["He","is","from","Mexico","."], hint:"He + is + from + country."},
+  {type:"question",  tokens:["What","nationality","are","you","?"], hint:"Asks about nationality."},
+  {type:"statement", tokens:["We","are","students","."], hint:"We + are + …"},
+  {type:"question",  tokens:["Are","you","American","?"], hint:"Yes/No question — starts with the verb."},
+  {type:"statement", tokens:["My","name","is","Ana","Costa","."], hint:"Give a full name."},
+  {type:"question",  tokens:["Is","she","from","Japan","?"], hint:"Yes/No question about 'she'."},
+  {type:"statement", tokens:["They","are","forty","years","old","."], hint:"They + are + number + years old."}
+];
+
+/* ---------------- STATE ---------------- */
+let studentName="", cur=0, score=0, results=[];
+let answer=[], bankWords=[];
+document.getElementById('scoreTot').textContent=DATA.length;
+document.getElementById('endScore').nextElementSibling.textContent=" / "+DATA.length;
+document.querySelector('#playScreen .qnum');
+
+function startGame(){
+  const n=document.getElementById('nameInput').value.trim();
+  studentName=n||"Student";
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('playScreen').classList.remove('hidden');
+  document.getElementById('scoreTag').style.display='inline-block';
+  cur=0;score=0;results=[];
+  loadQuestion();
+}
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function loadQuestion(){
+  const q=DATA[cur];
+  answer=[];
+  // shuffle; ensure not already in correct order
+  do{bankWords=shuffle(q.tokens.map((w,i)=>({w,id:i})));}
+  while(bankWords.map(o=>o.w).join(" ")===q.tokens.join(" ") && q.tokens.length>2);
+
+  document.getElementById('qnum').textContent=`Sentence ${cur+1} of ${DATA.length}`;
+  const tp=document.getElementById('qtype');
+  tp.textContent=q.type==="question"?"Question":"Statement";
+  tp.className="qtype "+q.type;
+  document.getElementById('hintText').textContent=q.hint;
+  document.getElementById('pfill').style.width=(cur/DATA.length*100)+"%";
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('feedback').className="feedback";
+  document.getElementById('checkBtn').disabled=false;
+  document.getElementById('checkBtn').textContent="Check ✓";
+  document.getElementById('checkBtn').onclick=checkAnswer;
+  renderWords();
+}
+
+function isPunct(w){return w==="."||w==="?"||w==="-"}
+
+function renderWords(){
+  const bank=document.getElementById('bank');
+  const build=document.getElementById('build');
+  bank.innerHTML="";build.innerHTML="";
+  // build area
+  build.classList.toggle('empty',answer.length===0);
+  answer.forEach((o,pos)=>{
+    const el=document.createElement('span');
+    el.className="word in-answer"+(isPunct(o.w)?" punct":"");
+    el.textContent=o.w;
+    el.onclick=()=>{answer.splice(pos,1);renderWords()};
+    build.appendChild(el);
+  });
+  // bank (words not yet used)
+  bankWords.forEach(o=>{
+    if(answer.find(a=>a.id===o.id))return;
+    const el=document.createElement('span');
+    el.className="word"+(isPunct(o.w)?" punct":"");
+    el.textContent=o.w;
+    el.onclick=()=>{answer.push(o);renderWords()};
+    bank.appendChild(el);
+  });
+}
+
+function clearBuild(){answer=[];document.getElementById('build').className="build empty";renderWords()}
+
+function checkAnswer(){
+  const q=DATA[cur];
+  const built=answer.map(o=>o.w).join(" ");
+  const correct=q.tokens.join(" ");
+  const ok=built===correct;
+  const build=document.getElementById('build');
+  const fb=document.getElementById('feedback');
+  build.className="build "+(ok?"correct":"wrong");
+  if(ok)score++;
+  results.push({sentence:pretty(q.tokens),ok});
+  document.getElementById('scoreNum').textContent=score;
+  fb.className="feedback show "+(ok?"ok":"no");
+  fb.innerHTML = ok
+    ? `<b>✓ Correct! Nice work.</b>${pretty(q.tokens)} <button class="speak-mini" onclick="say('${pretty(q.tokens).replace(/'/g,"")}')">🔊 Hear it</button>`
+    : `<b>✗ Not quite.</b>The correct sentence is:<div class="correct-answer">${pretty(q.tokens)}</div><button class="speak-mini" onclick="say('${pretty(q.tokens).replace(/'/g,"")}')">🔊 Hear it</button>`;
+  const btn=document.getElementById('checkBtn');
+  btn.textContent = cur===DATA.length-1 ? "See results →" : "Next →";
+  btn.onclick=nextQuestion;
+}
+
+function pretty(tokens){
+  let s="";
+  tokens.forEach((t,i)=>{
+    if(t==="-"){s=s.replace(/\s$/,"")+"-";return;}
+    if(i>0 && tokens[i-1]==="-"){s+=t;return;}
+    if(isPunct(t)){s=s.replace(/\s$/,"")+t;return;}
+    s+=(i>0?" ":"")+t;
+  });
+  return s.trim();
+}
+
+function nextQuestion(){
+  cur++;
+  if(cur>=DATA.length){showEnd();return;}
+  loadQuestion();
+}
+
+function showEnd(){
+  document.getElementById('playScreen').classList.add('hidden');
+  document.getElementById('endScreen').classList.remove('hidden');
+  document.getElementById('scoreTag').style.display='none';
+  document.getElementById('endName').textContent=studentName;
+  document.getElementById('endScore').textContent=score;
+  document.getElementById('pfill').style.width="100%";
+  const pct=score/DATA.length;
+  const emoji=pct===1?"🏆":pct>=.75?"🎉":pct>=.5?"👍":"💪";
+  document.getElementById('endEmoji').textContent=emoji;
+  document.getElementById('endMsg').textContent =
+    pct===1?"Perfect score! Every sentence correct.":
+    pct>=.75?"Great job — you've got this.":
+    pct>=.5?"Good effort! Review the ones you missed.":
+    "Nice try — practice makes progress!";
+  document.getElementById('finalCode').textContent=makeCode(studentName,score,DATA.length);
+  // review list
+  const rl=document.getElementById('reviewList');rl.innerHTML="";
+  results.forEach(r=>{
+    const d=document.createElement('div');d.className="item";
+    d.innerHTML=`<span class="mk ${r.ok?'y':'n'}">${r.ok?'✓':'✗'}</span><span class="sent">${r.sentence}</span>`;
+    rl.appendChild(d);
+  });
+}
+
+/* ---------------- COMPLETION CODE ----------------
+   Encode "NAME|score|total" in a light, readable way.
+   Format: AO-<base36 score/total>-<name-initials+checksum>
+   Simple & reversible; teacher decoder below reads it. */
+function makeCode(name,sc,tot){
+  const clean=name.toUpperCase().replace(/[^A-Z]/g,"").slice(0,8)||"STUDENT";
+  const payload=`${clean}|${sc}|${tot}`;
+  // base64-ish encode (browser btoa), strip padding, uppercase-friendly
+  let b=btoa(unescape(encodeURIComponent(payload))).replace(/=+$/,"");
+  return "AO-"+b;
+}
+function readCode(code){
+  try{
+    const b=code.trim().replace(/^AO-/i,"");
+    const payload=decodeURIComponent(escape(atob(b)));
+    const [name,sc,tot]=payload.split("|");
+    if(!name||sc===undefined||tot===undefined)return null;
+    return {name,sc,tot};
+  }catch(e){return null;}
+}
+
+function copyCode(){
+  const code=document.getElementById('finalCode').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(code).then(()=>{
+    event.target.textContent="✓ Copied!";
+    setTimeout(()=>event.target.textContent="📋 Copy code",1500);
+  });}
+}
+
+/* ---------------- TEACHER DECODER ---------------- */
+function toggleDecoder(){
+  document.getElementById('decoder').classList.toggle('hidden');
+}
+function decodeCode(){
+  const v=document.getElementById('decodeInput').value;
+  const r=document.getElementById('decodeResult');
+  if(!v.trim()){r.innerHTML="";return;}
+  const d=readCode(v);
+  if(!d){r.innerHTML='<span style="color:#c65b3c">Not a valid code.</span>';return;}
+  const pct=Math.round(d.sc/d.tot*100);
+  r.innerHTML=`<b>${d.name}</b> scored <b>${d.sc} / ${d.tot}</b> (${pct}%)`;
+}
+
+/* ---------------- SPEECH ---------------- */
+function say(text){
+  if(!('speechSynthesis'in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.85;
+  speechSynthesis.speak(u);
+}
+
+// Enter key starts game from name field
+document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')startGame()});
+</script>
+</body>
+</html>
