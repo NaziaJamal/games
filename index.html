@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Present — Word Order Practice</title>
+<style>
+  :root{
+    --teal:#0d6e6e; --teal-deep:#094f4f; --gold:#d8a24a; --clay:#c46a4a;
+    --paper:#faf7f2; --ink:#1f2a2e; --muted:#5f6b6b; --line:#e6ded2;
+    --green:#2c6e49; --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:Georgia,"Times New Roman",serif;
+    background:var(--paper); color:var(--ink);
+    line-height:1.5; min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:0 16px 40px;
+  }
+  .wrap{width:100%; max-width:640px;}
+  header{
+    text-align:center; padding:30px 0 20px;
+  }
+  .eyebrow{
+    font-family:"Trebuchet MS",sans-serif; font-size:.72rem;
+    letter-spacing:.2em; text-transform:uppercase; color:var(--clay);
+    font-weight:bold; margin-bottom:8px;
+  }
+  h1{font-size:1.7rem; font-weight:normal; color:var(--teal-deep); line-height:1.2;}
+  header p{font-family:"Trebuchet MS",sans-serif; font-size:.9rem; color:var(--muted); margin-top:8px;}
+
+  /* progress */
+  .progress-row{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:"Trebuchet MS",sans-serif; font-size:.82rem; color:var(--muted);
+    margin-bottom:8px;
+  }
+  .bar{height:7px; background:var(--line); border-radius:4px; overflow:hidden; margin-bottom:22px;}
+  .bar span{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--teal),var(--gold)); transition:width .35s ease;}
+
+  /* card */
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:24px 20px; box-shadow:0 4px 18px rgba(9,79,79,.06);
+  }
+  .hint{
+    font-family:"Trebuchet MS",sans-serif; font-size:.8rem; color:var(--muted);
+    text-align:center; margin-bottom:6px;
+  }
+  .prompt{
+    font-family:"Trebuchet MS",sans-serif; font-size:.78rem; color:var(--clay);
+    text-align:center; letter-spacing:.04em; margin-bottom:16px; min-height:1.1em;
+  }
+
+  /* answer tray */
+  .answer{
+    min-height:64px; border:2px dashed var(--line); border-radius:12px;
+    padding:10px; display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start;
+    margin-bottom:6px; transition:border-color .2s, background .2s;
+  }
+  .answer.correct{border-color:var(--green); border-style:solid; background:#f0f7f2;}
+  .answer.wrong{border-color:var(--clay); border-style:solid; background:#fbeee9;}
+  .answer:empty::before{
+    content:"Tap the words below in the correct order…";
+    font-family:"Trebuchet MS",sans-serif; font-size:.85rem; color:#b6ab9a;
+    align-self:center; margin:auto;
+  }
+
+  /* word bank */
+  .bank{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px; min-height:44px;}
+
+  .chip{
+    font-family:"Trebuchet MS",sans-serif; font-size:1.02rem;
+    background:var(--paper); border:1.5px solid var(--teal);
+    color:var(--teal-deep); padding:9px 15px; border-radius:9px;
+    cursor:pointer; user-select:none; transition:transform .12s, background .15s, opacity .15s;
+    min-height:44px; display:inline-flex; align-items:center;
+  }
+  .chip:active{transform:scale(.94);}
+  .chip.placed{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .chip.hidden{opacity:0; pointer-events:none; position:absolute;}
+  .chip.locked{pointer-events:none;}
+
+  /* feedback */
+  .feedback{
+    text-align:center; font-family:"Trebuchet MS",sans-serif;
+    font-size:.95rem; min-height:1.5em; margin:16px 0 4px; font-weight:bold;
+  }
+  .feedback.ok{color:var(--green);}
+  .feedback.no{color:var(--clay);}
+
+  /* buttons */
+  .controls{display:flex; gap:10px; margin-top:16px;}
+  button.act{
+    flex:1; font-family:"Trebuchet MS",sans-serif; font-size:.98rem; font-weight:bold;
+    padding:14px; border-radius:11px; border:none; cursor:pointer; min-height:48px;
+    transition:transform .1s, opacity .15s;
+  }
+  button.act:active{transform:scale(.97);}
+  .btn-check{background:var(--teal); color:#fff;}
+  .btn-check:disabled{background:#c8d3d0; cursor:default;}
+  .btn-clear{background:transparent; color:var(--muted); border:1.5px solid var(--line)!important;}
+  .btn-next{background:var(--gold); color:#3a2a10;}
+  .btn-ghost{background:transparent; color:var(--teal-deep); border:1.5px solid var(--teal)!important;}
+  .hidden-btn{display:none;}
+
+  /* footer / score screen */
+  .done{text-align:center; padding:20px 10px;}
+  .done .score-num{font-size:3.4rem; color:var(--teal-deep); line-height:1;}
+  .done .score-lbl{font-family:"Trebuchet MS",sans-serif; color:var(--muted); font-size:.9rem; margin:6px 0 20px;}
+  .done h2{font-weight:normal; color:var(--teal-deep); font-size:1.5rem; margin-bottom:10px;}
+  .done p{font-family:"Trebuchet MS",sans-serif; font-size:.95rem; color:var(--muted); margin-bottom:22px;}
+  .quote{font-style:italic; color:var(--gold); margin-top:26px; font-size:1.05rem;}
+  .credit{font-family:"Trebuchet MS",sans-serif; font-size:.72rem; color:#b6ab9a; text-align:center; margin-top:24px;}
+
+  @media(max-width:400px){
+    h1{font-size:1.45rem;}
+    .chip{font-size:.96rem; padding:9px 13px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Free English Program</div>
+    <h1>Put the words in order</h1>
+    <p>Practise the simple present — build each sentence, then check.</p>
+  </header>
+
+  <div id="game">
+    <div class="progress-row">
+      <span id="counter">Sentence 1 of 16</span>
+      <span id="scoretag">Score: 0</span>
+    </div>
+    <div class="bar"><span id="barfill"></span></div>
+
+    <div class="card">
+      <div class="prompt" id="prompt"></div>
+      <div class="answer" id="answer" aria-live="polite"></div>
+      <div class="bank" id="bank"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="controls" id="controls">
+        <button class="act btn-clear" id="clearBtn">Clear</button>
+        <button class="act btn-check" id="checkBtn" disabled>Check</button>
+      </div>
+      <div class="controls hidden-btn" id="nextControls">
+        <button class="act btn-ghost" id="tryBtn">Try again</button>
+        <button class="act btn-next" id="nextBtn">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="doneScreen" style="display:none;"></div>
+
+  <div class="credit">Tap a word to place it · tap a placed word to remove it</div>
+</div>
+
+<script>
+// ---- sentence bank: each is the CORRECT order. Hints guide the grammar point. ----
+const SENTENCES = [
+  { words:["She","works","in","a","hospital","."], hint:"third person: add –s" },
+  { words:["I","get","up","at","six","o'clock","."], hint:"daily routine" },
+  { words:["He","doesn't","like","cold","weather","."], hint:"negative: he/she/it" },
+  { words:["Do","you","speak","English","?"], hint:"yes/no question" },
+  { words:["My","brother","studies","every","evening","."], hint:"consonant + y → ies" },
+  { words:["They","don't","live","in","Kabul","."], hint:"negative: I/you/we/they" },
+  { words:["Where","does","she","go","on","Fridays","?"], hint:"wh– question" },
+  { words:["We","always","drink","tea","in","the","morning","."], hint:"frequency adverb" },
+  { words:["The","train","leaves","at","nine","."], hint:"timetable" },
+  { words:["Does","he","play","football","?"], hint:"question: he/she/it" },
+  { words:["I","usually","walk","to","work","."], hint:"frequency adverb position" },
+  { words:["She","never","eats","meat","."], hint:"frequency + third person –s" },
+  { words:["What","time","do","you","start","work","?"], hint:"wh– question" },
+  { words:["My","sister","reads","books","every","night","."], hint:"third person: add –s" },
+  { words:["He","goes","to","school","by","bus","."], hint:"add –es (go → goes)" },
+  { words:["We","don't","have","class","on","Sunday","."], hint:"negative: we" }
+];
+
+let order = shuffle([...Array(SENTENCES.length).keys()]);
+let idx = 0, score = 0, checked = false;
+
+const el = id => document.getElementById(id);
+const answerEl = el("answer"), bankEl = el("bank"), promptEl = el("prompt"),
+      feedbackEl = el("feedback"), counterEl = el("counter"), scoretagEl = el("scoretag"),
+      barfill = el("barfill"), checkBtn = el("checkBtn"), clearBtn = el("clearBtn"),
+      controls = el("controls"), nextControls = el("nextControls"),
+      nextBtn = el("nextBtn"), tryBtn = el("tryBtn");
+
+let placed = []; // {word, chipEl}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function loadSentence(){
+  checked = false;
+  placed = [];
+  answerEl.className = "answer";
+  answerEl.innerHTML = "";
+  bankEl.innerHTML = "";
+  feedbackEl.textContent = "";
+  feedbackEl.className = "feedback";
+  controls.classList.remove("hidden-btn");
+  nextControls.classList.add("hidden-btn");
+  checkBtn.disabled = true;
+
+  const s = SENTENCES[order[idx]];
+  promptEl.textContent = s.hint ? "Hint: " + s.hint : "";
+  counterEl.textContent = `Sentence ${idx+1} of ${SENTENCES.length}`;
+  scoretagEl.textContent = `Score: ${score}`;
+  barfill.style.width = (idx/SENTENCES.length*100) + "%";
+
+  // shuffled word chips (ensure not already in order)
+  let sw = shuffle([...s.words]);
+  if(sw.join(" ")===s.words.join(" ") && s.words.length>1){ sw = shuffle([...s.words]); }
+  sw.forEach(word=>{
+    const chip = document.createElement("button");
+    chip.className = "chip"; chip.textContent = word; chip.type="button";
+    chip.addEventListener("click", ()=>placeWord(chip, word));
+    bankEl.appendChild(chip);
+  });
+}
+
+function placeWord(chip, word){
+  if(checked) return;
+  chip.classList.add("hidden");
+  const a = document.createElement("button");
+  a.className = "chip placed"; a.textContent = word; a.type="button";
+  a.addEventListener("click", ()=>removeWord(a, chip));
+  answerEl.appendChild(a);
+  placed.push({word, aEl:a, chip});
+  checkBtn.disabled = placed.length===0;
+}
+
+function removeWord(aEl, chip){
+  if(checked) return;
+  const i = placed.findIndex(p=>p.aEl===aEl);
+  if(i>-1) placed.splice(i,1);
+  aEl.remove();
+  chip.classList.remove("hidden");
+  checkBtn.disabled = placed.length===0;
+}
+
+clearBtn.addEventListener("click", ()=>{
+  if(checked) return;
+  placed.slice().forEach(p=>removeWord(p.aEl, p.chip));
+});
+
+checkBtn.addEventListener("click", ()=>{
+  if(placed.length===0) return;
+  checked = true;
+  const s = SENTENCES[order[idx]];
+  const attempt = placed.map(p=>p.word).join(" ");
+  const correct = s.words.join(" ");
+  controls.classList.add("hidden-btn");
+  nextControls.classList.remove("hidden-btn");
+  // lock chips
+  document.querySelectorAll(".chip").forEach(c=>c.classList.add("locked"));
+
+  if(attempt===correct){
+    score++;
+    answerEl.classList.add("correct");
+    feedbackEl.textContent = pick(["Perfect! ✓","Well done! ✓","Excellent! ✓","That's right! ✓"]);
+    feedbackEl.className = "feedback ok";
+    tryBtn.style.display="none";
+  }else{
+    answerEl.classList.add("wrong");
+    feedbackEl.textContent = "Not quite — try again!";
+    feedbackEl.className = "feedback no";
+    tryBtn.style.display="";
+  }
+  scoretagEl.textContent = `Score: ${score}`;
+});
+
+tryBtn.addEventListener("click", ()=>{
+  // reset current sentence without changing score
+  const s = SENTENCES[order[idx]];
+  loadSentenceKeepScore();
+});
+function loadSentenceKeepScore(){ loadSentence(); }
+
+nextBtn.addEventListener("click", ()=>{
+  idx++;
+  if(idx>=SENTENCES.length){ showDone(); }
+  else loadSentence();
+});
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function showDone(){
+  el("game").style.display="none";
+  const pct = Math.round(score/SENTENCES.length*100);
+  let msg;
+  if(pct===100) msg="Amazing — a perfect score! You've mastered word order.";
+  else if(pct>=75) msg="Great work! Your simple present is getting strong.";
+  else if(pct>=50) msg="Good effort! A little more practice and you'll have it.";
+  else msg="Keep going — every try makes you better. Play again!";
+  const d = el("doneScreen");
+  d.style.display="block";
+  d.innerHTML = `
+    <div class="card done">
+      <div class="score-num">${score}/${SENTENCES.length}</div>
+      <div class="score-lbl">${pct}% correct</div>
+      <h2>Nicely done!</h2>
+      <p>${msg}</p>
+      <div class="controls">
+        <button class="act btn-next" id="againBtn">Practise again</button>
+      </div>
+      <div class="quote">"Little by little, a little becomes a lot."</div>
+    </div>`;
+  el("againBtn").addEventListener("click", ()=>{
+    order = shuffle([...Array(SENTENCES.length).keys()]);
+    idx=0; score=0;
+    d.style.display="none"; el("game").style.display="block";
+    loadSentence();
+  });
+}
+
+loadSentence();
+</script>
+</body>
+</html>
